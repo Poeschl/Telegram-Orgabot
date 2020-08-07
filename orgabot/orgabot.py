@@ -110,6 +110,7 @@ class GracefulKiller:
 
     def exit_gracefully(self, signum, frame):
         self.exit_callback()
+        sys.exit(0)
 
 
 def debug_input(reminder_func, nomination_func):
