@@ -1,6 +1,7 @@
 import logging
 import sched
 from datetime import datetime
+from string import Template
 from threading import Thread
 
 from telegram import Bot
@@ -18,6 +19,7 @@ class RepeatingReminder:
         self.start_datetime = start_datetime
         self.interval_seconds = interval_days * 24 * 60 * 60
         self.scheduler = sched.scheduler()
+        self.callback = None
 
     def start(self):
         if self.start_datetime <= datetime.now():
@@ -36,10 +38,23 @@ class RepeatingReminder:
     def reminder(self):
         logging.info("Send reminder to group.")
         self.bot.send_message(chat_id=self.chat_id, text=self.message)
-        self.scheduler.enter(self.interval_seconds, 1, self.reminder)
+        if self.callback is not None: self.callback()
 
+        self.scheduler.enter(self.interval_seconds, 1, self.reminder)
         logging.info("Next reminder in %d seconds.", self.interval_seconds)
         self.scheduler.run()
+
+
+class UserNominator:
+
+    def __init__(self, bot: Bot, chat_id: int, nominate_template: str):
+        self.bot = bot
+        self.chat_id = chat_id
+        self.nominate_template = nominate_template
+
+    def nominate_user(self):
+        text = Template(self.nominate_template).substitute(user="@Mr_Poeschl")
+        self.bot.send_message(chat_id=self.chat_id, text=text)
 
 
 def main():
@@ -53,14 +68,25 @@ def main():
 
     telegram_api.start()
 
+    reminder = RepeatingReminder(telegram_api.get_bot(),
+                                 config.get_config(GROUP_ID),
+                                 messages.get_message("reminder_text"),
+                                 config.get_config(REMINDER_DATETIME),
+                                 config.get_config(REMINDER_INTERVAL))
+
+    user_nominator = UserNominator(telegram_api.get_bot(),
+                                   config.get_config(GROUP_ID),
+                                   messages.get_message("nomination_text"))
+
+    def on_remind():
+        user_nominator.nominate_user()
+
+    reminder.callback = on_remind
+
     class ReminderThread(Thread):
         def run(self) -> None:
-            reminder = RepeatingReminder(telegram_api.get_bot(),
-                                         config.get_config(GROUP_ID),
-                                         messages.get_message("reminder_text"),
-                                         config.get_config(REMINDER_DATETIME),
-                                         config.get_config(REMINDER_INTERVAL))
             reminder.start()
+
     ReminderThread().start()
 
 

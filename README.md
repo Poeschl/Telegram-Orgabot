@@ -15,6 +15,7 @@ telegram_api_key: <api-key>
 group_id: 12345678
 reminder_datetime: 2020-08-07 08:00:00
 reminder_interval_days: 14
+nominate_group_member: true
 ```
 
 ### Description
@@ -30,6 +31,12 @@ The date and time for the first reminder message.
 
 #### `reminder_interval_days`
 The interval in days in which the message should be repeated.
+
+#### `nominate_group_member`
+If true a group member will be chosen randomly to organize the next event.
+
+### Texts
+All texts can be changed via the `message.yaml` file beside the config file.
 
 ## Environment
 

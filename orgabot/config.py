@@ -9,6 +9,7 @@ TELEGRAM_API_KEY = 'telegram_api_key'
 GROUP_ID = 'group_id'
 REMINDER_DATETIME = 'reminder_datetime'
 REMINDER_INTERVAL = 'reminder_interval_days'
+NOMINATE_GROUP_MEMBER = 'nomnate_group_member'
 
 DEFAULT_CONFIG_FOLDER = 'config'
 
@@ -19,7 +20,8 @@ class Config:
         TELEGRAM_API_KEY: '',
         GROUP_ID: '',
         REMINDER_DATETIME: datetime.now(),
-        REMINDER_INTERVAL: 14
+        REMINDER_INTERVAL: 14,
+        NOMINATE_GROUP_MEMBER: True
     }
 
     def __init__(self):
