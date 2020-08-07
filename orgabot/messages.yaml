@@ -1,2 +1,4 @@
 reminder_text: "Ich bin ein Reminder für das nächste Treffen. Tut was nötig ist."
 nomination_text: "Dieses Mal ist $user mit dem organisieren dran."
+nomination_reroll_button: "🔄 Reroll"
+nomination_reroll_notification: "$user hat erneut gewürfelt"

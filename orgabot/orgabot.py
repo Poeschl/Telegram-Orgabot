@@ -6,8 +6,8 @@ from random import choice
 from string import Template
 from threading import Thread
 
-from telegram import Bot
-from telegram.ext import MessageHandler, Filters
+from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import MessageHandler, Filters, CallbackQueryHandler
 
 from config import Config, TELEGRAM_API_KEY, GROUP_ID, Messages, REMINDER_DATETIME, REMINDER_INTERVAL, DEBUG, KnownUsers
 from telegramapi import TelegramEndpoint
@@ -50,13 +50,17 @@ class RepeatingReminder:
         self.scheduler.run()
 
 
-class UserNominator():
+class UserNominator:
+    REROLL_ACTION = "nomiation_reroll"
 
-    def __init__(self, bot: Bot, chat_id: int, nominate_template: str, known_users: KnownUsers):
+    def __init__(self, bot: Bot, chat_id: int, known_users: KnownUsers, nominate_template: str, nominate_reroll_text: str,
+                 nominate_reroll_notification: str):
         self.bot = bot
         self.chat_id = chat_id
-        self.nominate_template = nominate_template
         self.known_users = known_users
+        self.nominate_template = nominate_template
+        self.nominate_reroll_text = nominate_reroll_text
+        self.nominate_reroll_notification = nominate_reroll_notification
 
     def spy_on_message(self, update, context):
         user_id = update.effective_user['id']
@@ -65,13 +69,33 @@ class UserNominator():
             logging.info(f"New user {username} detected")
             self.known_users.insert_user(user_id, username)
 
+    def reroll_nominee(self, update, context):
+        self.spy_on_message(update, context)
+        issuer = update.effective_user["username"]
+        logging.info(f"Reroll nominee on behave of '{issuer}'")
+
+        message_id = update.effective_message["message_id"]
+        self.bot.delete_message(chat_id=self.chat_id, message_id=message_id)
+
+        nominee = self._get_nominee()
+        notification = Template(self.nominate_reroll_notification).substitute(user=f"@{issuer}")
+        roll = Template(self.nominate_template).substitute(user=f"@{nominee}")
+        self.bot.send_message(chat_id=self.chat_id, text=f"{notification}\n{roll}")
+
     def nominate_user(self):
+        nominee = self._get_nominee()
+
+        keyboard = [[InlineKeyboardButton(self.nominate_reroll_text, callback_data=self.REROLL_ACTION)]]
+        reroll_keyboard = InlineKeyboardMarkup(keyboard)
+
+        text = Template(self.nominate_template).substitute(user=f"@{nominee}")
+        self.bot.send_message(chat_id=self.chat_id, text=text, reply_markup=reroll_keyboard)
+
+    def _get_nominee(self):
         users = self.known_users.users
         nominee = choice(list(users.values()))
-
         logging.info(f"Nominate '{nominee}' for the organisation")
-        text = Template(self.nominate_template).substitute(user=f"@{nominee}")
-        self.bot.send_message(chat_id=self.chat_id, text=text)
+        return nominee
 
 
 class GracefulKiller:
@@ -132,9 +156,12 @@ def main():
 
     user_nominator = UserNominator(telegram_api.get_bot(),
                                    config.get_config(GROUP_ID),
+                                   KnownUsers(),
                                    messages.get_message("nomination_text"),
-                                   KnownUsers())
+                                   messages.get_message("nomination_reroll_button"),
+                                   messages.get_message("nomination_reroll_notification"))
     telegram_api.register_command_handler(MessageHandler(Filters.all, user_nominator.spy_on_message))
+    telegram_api.register_command_handler(CallbackQueryHandler(user_nominator.reroll_nominee, pattern=user_nominator.REROLL_ACTION))
 
     def on_remind():
         user_nominator.nominate_user()
