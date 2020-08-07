@@ -10,5 +10,3 @@ services:
     image: orgabot
     volumes:
     - ./config:/home/bot/config:rw
-    environment:
-      CONFIG_FILE: /home/bot/config/config.yaml

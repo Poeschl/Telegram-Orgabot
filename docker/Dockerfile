@@ -16,6 +16,7 @@ RUN pip3 install --user -r requirements.txt
 FROM alpine:3.12.0 AS RUN
 
 ENV WORKING_DIR /home/bot
+ENV CONFIG_FOLDER /home/bot/config/
 WORKDIR ${WORKING_DIR}
 
 RUN apk add -Uu --no-cache --purge python3=3.8.5-r0
