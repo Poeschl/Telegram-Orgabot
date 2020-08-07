@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 from datetime import datetime
@@ -16,7 +17,6 @@ DEFAULT_CONFIG_FOLDER = 'config'
 
 
 class Config:
-
     config_data = {
         DEBUG: False,
         TELEGRAM_API_KEY: '',
@@ -32,6 +32,7 @@ class Config:
             os.mkdir(config_folder)
         self.config_file = config_folder + '/config.yaml'
         self._parse_config()
+        self._verify_config()
 
     def _parse_config(self):
         if path.exists(self.config_file):
@@ -39,8 +40,12 @@ class Config:
                 stored_config_data = load(file, SafeLoader)
                 self.config_data = {**self.config_data, **stored_config_data}
         else:
-            with open(self.config_file,  'w') as file:
+            with open(self.config_file, 'w') as file:
                 dump(self.config_data, file)
+
+    def _verify_config(self):
+        if int(self.config_data[GROUP_ID]) >= 0:
+            logging.error("The group id is not referencing a group! The bot may not work as intended")
 
     def get_config(self, key: str):
         return self.config_data[key]
@@ -55,17 +60,41 @@ class Messages:
         if not path.exists(config_folder):
             os.mkdir(config_folder)
         self.message_file = config_folder + '/message.yaml'
-        self._parse_config()
+        self._parse_messages()
 
-    def _parse_config(self):
+    def _parse_messages(self):
         if path.exists(self.message_file):
             with open(self.message_file) as file:
                 stored_message_data = load(file, SafeLoader)
                 self.message_data = {**self.message_data, **stored_message_data}
         else:
             shutil.copy(self.included_message_file, self.message_file)
-            with open(self.message_file,  'w') as file:
+            with open(self.message_file, 'w') as file:
                 self.message_data = load(file, SafeLoader)
 
     def get_message(self, key: str):
         return self.message_data[key]
+
+
+class KnownUsers:
+    users = {}
+
+    def __init__(self):
+        config_folder = os.getenv('CONFIG_FILE', DEFAULT_CONFIG_FOLDER)
+        if not path.exists(config_folder):
+            os.mkdir(config_folder)
+        self.users_file = config_folder + '/knownUsers.yaml'
+        self._parse_config()
+
+    def _parse_config(self):
+        if path.exists(self.users_file):
+            with open(self.users_file) as file:
+                self.users = load(file, SafeLoader)
+        else:
+            with open(self.users_file, 'w') as file:
+                dump(self.users, file)
+
+    def insert_user(self, user_id: str, name: str):
+        self.users[user_id] = name
+        with open(self.users_file, 'w') as file:
+            dump(self.users, file)

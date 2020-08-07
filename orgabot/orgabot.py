@@ -2,12 +2,14 @@ import logging
 import sched
 import signal
 from datetime import datetime
+from random import choice
 from string import Template
 from threading import Thread
 
 from telegram import Bot
+from telegram.ext import MessageHandler, Filters
 
-from config import Config, TELEGRAM_API_KEY, GROUP_ID, Messages, REMINDER_DATETIME, REMINDER_INTERVAL, DEBUG
+from config import Config, TELEGRAM_API_KEY, GROUP_ID, Messages, REMINDER_DATETIME, REMINDER_INTERVAL, DEBUG, KnownUsers
 from telegramapi import TelegramEndpoint
 
 
@@ -48,15 +50,27 @@ class RepeatingReminder:
         self.scheduler.run()
 
 
-class UserNominator:
+class UserNominator():
 
-    def __init__(self, bot: Bot, chat_id: int, nominate_template: str):
+    def __init__(self, bot: Bot, chat_id: int, nominate_template: str, known_users: KnownUsers):
         self.bot = bot
         self.chat_id = chat_id
         self.nominate_template = nominate_template
+        self.known_users = known_users
+
+    def spy_on_message(self, update, context):
+        user_id = update.effective_user['id']
+        username = update.effective_user['username']
+        if user_id not in self.known_users.users:
+            logging.info(f"New user {username} detected")
+            self.known_users.insert_user(user_id, username)
 
     def nominate_user(self):
-        text = Template(self.nominate_template).substitute(user="@Mr_Poeschl")
+        users = self.known_users.users
+        nominee = choice(list(users.values()))
+
+        logging.info(f"Nominate '{nominee}' for the organisation")
+        text = Template(self.nominate_template).substitute(user=f"@{nominee}")
         self.bot.send_message(chat_id=self.chat_id, text=text)
 
 
@@ -118,7 +132,9 @@ def main():
 
     user_nominator = UserNominator(telegram_api.get_bot(),
                                    config.get_config(GROUP_ID),
-                                   messages.get_message("nomination_text"))
+                                   messages.get_message("nomination_text"),
+                                   KnownUsers())
+    telegram_api.register_command_handler(MessageHandler(Filters.all, user_nominator.spy_on_message))
 
     def on_remind():
         user_nominator.nominate_user()
