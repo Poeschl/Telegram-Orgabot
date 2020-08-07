@@ -1,0 +1,6 @@
+# Ignore everything
+*
+# except docker-relevant files
+!/docker/
+!/orgabot
+!/requirements.txt
