@@ -9,6 +9,10 @@ Its configured with a yaml file and maybe in the future over a direct chat.
 * Selectes one of the group members to do the planing and reservations.
 * Opens a poll with 4 random selected locations from a google sheet table for 12h.
 
+## Screenshot
+
+![Screenshot](https://raw.githubusercontent.com/Poeschl/Telegram-Orgabot/master/doc/screenshot.png)
+
 ## Config
 
 Example config:
