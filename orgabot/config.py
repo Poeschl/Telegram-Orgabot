@@ -5,6 +5,7 @@ from os import path
 
 from yaml import SafeLoader, dump, load
 
+DEBUG = 'debug'
 TELEGRAM_API_KEY = 'telegram_api_key'
 GROUP_ID = 'group_id'
 REMINDER_DATETIME = 'reminder_datetime'
@@ -17,6 +18,7 @@ DEFAULT_CONFIG_FOLDER = 'config'
 class Config:
 
     config_data = {
+        DEBUG: False,
         TELEGRAM_API_KEY: '',
         GROUP_ID: '',
         REMINDER_DATETIME: datetime.now(),

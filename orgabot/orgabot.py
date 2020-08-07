@@ -1,12 +1,13 @@
 import logging
 import sched
+import signal
 from datetime import datetime
 from string import Template
 from threading import Thread
 
 from telegram import Bot
 
-from config import Config, TELEGRAM_API_KEY, GROUP_ID, Messages, REMINDER_DATETIME, REMINDER_INTERVAL
+from config import Config, TELEGRAM_API_KEY, GROUP_ID, Messages, REMINDER_DATETIME, REMINDER_INTERVAL, DEBUG
 from telegramapi import TelegramEndpoint
 
 
@@ -57,6 +58,18 @@ class UserNominator:
     def nominate_user(self):
         text = Template(self.nominate_template).substitute(user="@Mr_Poeschl")
         self.bot.send_message(chat_id=self.chat_id, text=text)
+
+
+class GracefulKiller:
+    exit_callback = None
+
+    def __init__(self, callback):
+        signal.signal(signal.SIGINT, self.exit_gracefully)
+        signal.signal(signal.SIGTERM, self.exit_gracefully)
+        self.exit_callback = callback
+
+    def exit_gracefully(self, signum, frame):
+        self.exit_callback()
 
 
 def debug_input(reminder_func, nomination_func):
@@ -118,7 +131,13 @@ def main():
 
     ReminderThread().start()
 
-    debug_input(reminder.reminder, user_nominator.nominate_user)
+    def on_exit():
+        reminder.stop()
+
+    GracefulKiller(on_exit)
+
+    if config.get_config(DEBUG):
+        debug_input(reminder.reminder, user_nominator.nominate_user)
 
 
 if __name__ == '__main__':
