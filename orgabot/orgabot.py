@@ -1,6 +1,7 @@
 import logging
 import sched
 import signal
+import sys
 from datetime import datetime
 from random import choice
 from string import Template
@@ -132,7 +133,8 @@ def debug_input(reminder_func, nomination_func):
                 AsyncThread().start()
 
             elif debug_event == 2:
-                nomination_func()
+                if nomination_func is not None:
+                    nomination_func()
 
         except ValueError:
             print("Error! This is not a valid number. Try again.")
@@ -140,6 +142,7 @@ def debug_input(reminder_func, nomination_func):
 
 def main():
     logging.basicConfig(level=logging.INFO)
+    logging.root.addHandler(logging.StreamHandler(sys.stdout))
     config = Config()
     messages = Messages()
     telegram_api = TelegramEndpoint(config.get_config(TELEGRAM_API_KEY))
