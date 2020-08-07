@@ -1,17 +1,20 @@
 import logging
+import os
 import sched
 import signal
 import sys
 from datetime import datetime
-from random import choice
+from random import choice, sample
 from string import Template
 from threading import Thread
 
-from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, ChatAction
 from telegram.ext import MessageHandler, Filters, CallbackQueryHandler
 
 from config import Config, TELEGRAM_API_KEY, GROUP_ID, Messages, REMINDER_DATETIME, REMINDER_INTERVAL, DEBUG, KnownUsers, \
-    NOMINATE_GROUP_MEMBER
+    GOOGLE_USER_CREDENTIALS_FILE, LOCATION_SHEET_NAME, LOCATION_SHEET_NAMES_AREA
+from config import NOMINATE_GROUP_MEMBER
+from sheets import SheetsInterface
 from telegramapi import TelegramEndpoint
 
 
@@ -72,17 +75,17 @@ class UserNominator:
             self.known_users.insert_user(user_id, username)
 
     def reroll_nominee(self, update, context):
+        context.bot.send_chat_action(chat_id=self.chat_id, action=ChatAction.TYPING)
         self.spy_on_message(update, context)
         issuer = update.effective_user["username"]
         logging.info(f"Reroll nominee on behave of '{issuer}'")
 
         message_id = update.effective_message["message_id"]
-        self.bot.delete_message(chat_id=self.chat_id, message_id=message_id)
 
         nominee = self._get_nominee()
         notification = Template(self.nominate_reroll_notification).substitute(user=f"@{issuer}")
         roll = Template(self.nominate_template).substitute(user=f"@{nominee}")
-        self.bot.send_message(chat_id=self.chat_id, text=f"{notification}\n{roll}")
+        self.bot.edit_message_text(chat_id=self.chat_id, message_id=message_id, text=f"{notification}\n\n{roll}")
 
     def nominate_user(self):
         nominee = self._get_nominee()
@@ -100,6 +103,60 @@ class UserNominator:
         return nominee
 
 
+class LocationSuggester:
+    REROLL_ACTION = 'location_reroll'
+
+    def __init__(self, bot: Bot, chat_id: str, google_creds_file: str, sheetname: str, name_area: str, poll_question: str,
+                 location_reroll_text: str, location_reroll_notification: str):
+        self.bot = bot
+        self.chat_id = chat_id
+        self.google_creds_file = google_creds_file
+        self.sheetname = sheetname
+        self.name_area = name_area
+        self.poll_question = poll_question
+        self.location_reroll_text = location_reroll_text
+        self.location_reroll_notification =  location_reroll_notification
+
+    def suggest_locations(self):
+        logging.info(f"Get locations from '{self.sheetname}' Sheet for location poll")
+        chosen_locations = self._get_random_locations()
+        open_seconds = 24 * 60 * 60
+        logging.info(f"Selected locations: {chosen_locations}")
+
+        keyboard = [[InlineKeyboardButton(self.location_reroll_text, callback_data=self.REROLL_ACTION)]]
+        reroll_keyboard = InlineKeyboardMarkup(keyboard)
+
+        self.bot.send_poll(chat_id=self.chat_id, is_anonymous=False, allows_multiple_answers=True, open_period=open_seconds,
+                           question=self.poll_question, options=chosen_locations, reply_markup=reroll_keyboard)
+
+    def reroll_location(self, update, context):
+        context.bot.send_chat_action(chat_id=self.chat_id, action=ChatAction.TYPING)
+        issuer = update.effective_user["username"]
+        logging.info(f"Reroll locations on behave of '{issuer}'")
+
+        chosen_locations = self._get_random_locations()
+        logging.info(f"Rerolled locations: {chosen_locations}")
+
+        message_id = update.effective_message["message_id"]
+        self.bot.delete_message(chat_id=self.chat_id, message_id=message_id)
+
+        notification = Template(self.location_reroll_notification).substitute(user=f"@{issuer}")
+        open_seconds = 24 * 60 * 60
+        self.bot.send_poll(chat_id=self.chat_id, is_anonymous=False, allows_multiple_answers=True, open_period=open_seconds,
+                           question=f"{notification}\n\n{self.poll_question}", options=chosen_locations)
+
+    def _get_random_locations(self):
+        sheets = SheetsInterface(self.google_creds_file)
+
+        area = sheets.read_col(self.sheetname, self.name_area)
+
+        names = []
+        for i in range(len(area)):
+            names.append(area[i][0])
+
+        return sample(names, 5)
+
+
 class GracefulKiller:
     exit_callback = None
 
@@ -110,13 +167,14 @@ class GracefulKiller:
 
     def exit_gracefully(self, signum, frame):
         self.exit_callback()
-        sys.exit(0)
+        os.kill(os.getpid(), 9)
 
 
-def debug_input(reminder_func, nomination_func):
+def debug_input(reminder_func, nomination_func, location_func):
     debug_options = {
         1: 'Reminder',
-        2: 'User nomination'
+        2: 'User nomination',
+        3: 'Suggest location'
     }
 
     while True:
@@ -136,6 +194,9 @@ def debug_input(reminder_func, nomination_func):
             elif debug_event == 2:
                 if nomination_func is not None:
                     nomination_func()
+            elif debug_event == 3:
+                if location_func is not None:
+                    location_func()
 
         except ValueError:
             print("Error! This is not a valid number. Try again.")
@@ -143,7 +204,12 @@ def debug_input(reminder_func, nomination_func):
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    logging.root.addHandler(logging.StreamHandler(sys.stdout))
+    error_handler = logging.root.handlers[0]
+    log_handler = logging.StreamHandler(sys.stdout)
+    log_handler.setFormatter(error_handler.formatter)
+    logging.root.removeHandler(error_handler)
+    logging.root.addHandler(log_handler)
+
     config = Config()
     messages = Messages()
     telegram_api = TelegramEndpoint(config.get_config(TELEGRAM_API_KEY))
@@ -169,9 +235,23 @@ def main():
         telegram_api.register_command_handler(MessageHandler(Filters.all, user_nominator.spy_on_message))
         telegram_api.register_command_handler(CallbackQueryHandler(user_nominator.reroll_nominee, pattern=user_nominator.REROLL_ACTION))
 
+    if config.get_config(GOOGLE_USER_CREDENTIALS_FILE) is not None:
+        location_suggester = LocationSuggester(telegram_api.get_bot(),
+                                               config.get_config(GROUP_ID),
+                                               f"{config.get_config_folder()}/{config.get_config(GOOGLE_USER_CREDENTIALS_FILE)}",
+                                               config.get_config(LOCATION_SHEET_NAME),
+                                               config.get_config(LOCATION_SHEET_NAMES_AREA),
+                                               messages.get_message("location_suggestion_question_text"),
+                                               messages.get_message("location_reroll_button"),
+                                               messages.get_message("location_reroll_notification"))
+        telegram_api.register_command_handler(CallbackQueryHandler(location_suggester.reroll_location,
+                                                                   pattern=location_suggester.REROLL_ACTION))
+
     def on_remind():
         if config.get_config(NOMINATE_GROUP_MEMBER):
             user_nominator.nominate_user()
+        if config.get_config(GOOGLE_USER_CREDENTIALS_FILE) is not None:
+            location_suggester.suggest_locations()
 
     reminder.callback = on_remind
 
@@ -187,7 +267,7 @@ def main():
     GracefulKiller(on_exit)
 
     if config.get_config(DEBUG):
-        debug_input(reminder.reminder, user_nominator.nominate_user)
+        debug_input(reminder.reminder, user_nominator.nominate_user, location_suggester.suggest_locations)
 
 
 if __name__ == '__main__':

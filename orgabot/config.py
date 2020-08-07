@@ -12,6 +12,9 @@ GROUP_ID = 'group_id'
 REMINDER_DATETIME = 'reminder_datetime'
 REMINDER_INTERVAL = 'reminder_interval_days'
 NOMINATE_GROUP_MEMBER = 'nomnate_group_member'
+GOOGLE_USER_CREDENTIALS_FILE = 'google_user_credentials_file'
+LOCATION_SHEET_NAME = 'location_sheet_name'
+LOCATION_SHEET_NAMES_AREA = 'location_sheet_names_area'
 
 DEFAULT_CONFIG_FOLDER = 'config'
 
@@ -23,7 +26,10 @@ class Config:
         GROUP_ID: '',
         REMINDER_DATETIME: datetime.now(),
         REMINDER_INTERVAL: 14,
-        NOMINATE_GROUP_MEMBER: True
+        NOMINATE_GROUP_MEMBER: True,
+        GOOGLE_USER_CREDENTIALS_FILE: '',
+        LOCATION_SHEET_NAME: '',
+        LOCATION_SHEET_NAMES_AREA: ''
     }
 
     def __init__(self):
@@ -36,9 +42,12 @@ class Config:
 
     def _parse_config(self):
         if path.exists(self.config_file):
-            with open(self.config_file) as file:
+            with open(self.config_file, 'r+') as file:
                 stored_config_data = load(file, SafeLoader)
                 self.config_data = {**self.config_data, **stored_config_data}
+                file.seek(0)
+                dump(self.config_data, file)
+                file.truncate()
         else:
             with open(self.config_file, 'w') as file:
                 dump(self.config_data, file)
@@ -49,6 +58,10 @@ class Config:
 
     def get_config(self, key: str):
         return self.config_data[key]
+
+    @staticmethod
+    def get_config_folder():
+        return os.getenv('CONFIG_FILE', DEFAULT_CONFIG_FOLDER)
 
 
 class Messages:
