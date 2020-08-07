@@ -1,7 +1,7 @@
 # Orgabot
 
 This Telegram bot reminds a group at a specific time about a future meeting and its preparations.
-Its configured with a yaml file anc maybe in the future over a direct chat.
+Its configured with a yaml file and maybe in the future over a direct chat.
 
 ## Features
 
