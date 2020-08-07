@@ -2,6 +2,7 @@
 
 * ➕ Add nomination of one group member to organize the next event.
 * ➕ Add message callback to get active group members names and id. 
+* ➕ Add re-roll button on nomination message.
 
 
 ## 0.1.0 - 2020-08-07

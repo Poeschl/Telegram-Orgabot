@@ -9,7 +9,8 @@ from threading import Thread
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import MessageHandler, Filters, CallbackQueryHandler
 
-from config import Config, TELEGRAM_API_KEY, GROUP_ID, Messages, REMINDER_DATETIME, REMINDER_INTERVAL, DEBUG, KnownUsers
+from config import Config, TELEGRAM_API_KEY, GROUP_ID, Messages, REMINDER_DATETIME, REMINDER_INTERVAL, DEBUG, KnownUsers, \
+    NOMINATE_GROUP_MEMBER
 from telegramapi import TelegramEndpoint
 
 
@@ -154,17 +155,19 @@ def main():
                                  config.get_config(REMINDER_DATETIME),
                                  config.get_config(REMINDER_INTERVAL))
 
-    user_nominator = UserNominator(telegram_api.get_bot(),
-                                   config.get_config(GROUP_ID),
-                                   KnownUsers(),
-                                   messages.get_message("nomination_text"),
-                                   messages.get_message("nomination_reroll_button"),
-                                   messages.get_message("nomination_reroll_notification"))
-    telegram_api.register_command_handler(MessageHandler(Filters.all, user_nominator.spy_on_message))
-    telegram_api.register_command_handler(CallbackQueryHandler(user_nominator.reroll_nominee, pattern=user_nominator.REROLL_ACTION))
+    if config.get_config(NOMINATE_GROUP_MEMBER):
+        user_nominator = UserNominator(telegram_api.get_bot(),
+                                       config.get_config(GROUP_ID),
+                                       KnownUsers(),
+                                       messages.get_message("nomination_text"),
+                                       messages.get_message("nomination_reroll_button"),
+                                       messages.get_message("nomination_reroll_notification"))
+        telegram_api.register_command_handler(MessageHandler(Filters.all, user_nominator.spy_on_message))
+        telegram_api.register_command_handler(CallbackQueryHandler(user_nominator.reroll_nominee, pattern=user_nominator.REROLL_ACTION))
 
     def on_remind():
-        user_nominator.nominate_user()
+        if config.get_config(NOMINATE_GROUP_MEMBER):
+            user_nominator.nominate_user()
 
     reminder.callback = on_remind
 
