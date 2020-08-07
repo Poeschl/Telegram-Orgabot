@@ -36,9 +36,11 @@ class RepeatingReminder:
             self.scheduler.cancel(event)
 
     def reminder(self):
+        self.stop()
         logging.info("Send reminder to group.")
         self.bot.send_message(chat_id=self.chat_id, text=self.message)
-        if self.callback is not None: self.callback()
+        if self.callback is not None:
+            self.callback()
 
         self.scheduler.enter(self.interval_seconds, 1, self.reminder)
         logging.info("Next reminder in %d seconds.", self.interval_seconds)
@@ -55,6 +57,33 @@ class UserNominator:
     def nominate_user(self):
         text = Template(self.nominate_template).substitute(user="@Mr_Poeschl")
         self.bot.send_message(chat_id=self.chat_id, text=text)
+
+
+def debug_input(reminder_func, nomination_func):
+    debug_options = {
+        1: 'Reminder',
+        2: 'User nomination'
+    }
+
+    while True:
+        print(f"Debug events:\n{debug_options}")
+        try:
+            debug_event = int(input("Run debug event: "))
+            if debug_event < 1 or debug_event > len(debug_options):
+                assert ValueError
+
+            if debug_event == 1:
+                class AsyncThread(Thread):
+                    def run(self) -> None:
+                        reminder_func()
+
+                AsyncThread().start()
+
+            elif debug_event == 2:
+                nomination_func()
+
+        except ValueError:
+            print("Error! This is not a valid number. Try again.")
 
 
 def main():
@@ -88,6 +117,8 @@ def main():
             reminder.start()
 
     ReminderThread().start()
+
+    debug_input(reminder.reminder, user_nominator.nominate_user)
 
 
 if __name__ == '__main__':
