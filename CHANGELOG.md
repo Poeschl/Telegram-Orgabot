@@ -1,6 +1,7 @@
 ## 1.1.0 - 2020-08-08
 
 * ➕ Can access a google sheet and reads suggestions for the next event locations
+* 🔨 Remove auto-closing poll after 5 minutes instead of 24h
 
 ## 1.0.0 - 2020-08-07
 

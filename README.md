@@ -7,7 +7,7 @@ Its configured with a yaml file and maybe in the future over a direct chat.
 
 * Sends a reminder message on a specified interval to a group
 * Selectes one of the group members to do the planing and reservations.
-* Opens a poll with 4 random selected locations from a google sheet table for 12h.
+* Opens a poll with 4 random selected locations from a google sheet.
 
 ## Screenshot
 
@@ -22,6 +22,9 @@ group_id: 12345678
 reminder_datetime: 2020-08-07 08:00:00
 reminder_interval_days: 14
 nominate_group_member: true
+google_user_credentials_file: credentials.json
+location_sheet_name: MySheet
+location_sheet_names_area: B3:B31
 ```
 
 ### Description

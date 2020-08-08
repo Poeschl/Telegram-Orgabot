@@ -115,19 +115,19 @@ class LocationSuggester:
         self.name_area = name_area
         self.poll_question = poll_question
         self.location_reroll_text = location_reroll_text
-        self.location_reroll_notification =  location_reroll_notification
+        self.location_reroll_notification = location_reroll_notification
+        self.last_message = None
 
     def suggest_locations(self):
         logging.info(f"Get locations from '{self.sheetname}' Sheet for location poll")
         chosen_locations = self._get_random_locations()
-        open_seconds = 24 * 60 * 60
         logging.info(f"Selected locations: {chosen_locations}")
 
         keyboard = [[InlineKeyboardButton(self.location_reroll_text, callback_data=self.REROLL_ACTION)]]
         reroll_keyboard = InlineKeyboardMarkup(keyboard)
 
-        self.bot.send_poll(chat_id=self.chat_id, is_anonymous=False, allows_multiple_answers=True, open_period=open_seconds,
-                           question=self.poll_question, options=chosen_locations, reply_markup=reroll_keyboard)
+        self.last_message = self.bot.send_poll(chat_id=self.chat_id, is_anonymous=False, allows_multiple_answers=True,
+                                               question=self.poll_question, options=chosen_locations, reply_markup=reroll_keyboard)
 
     def reroll_location(self, update, context):
         context.bot.send_chat_action(chat_id=self.chat_id, action=ChatAction.TYPING)
@@ -141,9 +141,8 @@ class LocationSuggester:
         self.bot.delete_message(chat_id=self.chat_id, message_id=message_id)
 
         notification = Template(self.location_reroll_notification).substitute(user=f"@{issuer}")
-        open_seconds = 24 * 60 * 60
-        self.bot.send_poll(chat_id=self.chat_id, is_anonymous=False, allows_multiple_answers=True, open_period=open_seconds,
-                           question=f"{notification}\n\n{self.poll_question}", options=chosen_locations)
+        self.last_message = self.bot.send_poll(chat_id=self.chat_id, is_anonymous=False, allows_multiple_answers=True,
+                                               question=f"{notification}\n\n{self.poll_question}", options=chosen_locations)
 
     def _get_random_locations(self):
         sheets = SheetsInterface(self.google_creds_file)
