@@ -1,4 +1,5 @@
 import logging
+import logging
 import os
 import sched
 import signal
@@ -6,13 +7,13 @@ import sys
 from datetime import datetime
 from random import choice, sample
 from string import Template
-from threading import Thread
 
+from croniter import croniter
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, ChatAction
 from telegram.ext import MessageHandler, Filters, CallbackQueryHandler
 
-from config import Config, TELEGRAM_API_KEY, GROUP_ID, Messages, REMINDER_DATETIME, REMINDER_INTERVAL, DEBUG, KnownUsers, \
-    GOOGLE_USER_CREDENTIALS_FILE, LOCATION_SHEET_NAME, LOCATION_SHEET_NAMES_AREA
+from config import Config, TELEGRAM_API_KEY, GROUP_ID, Messages, KnownUsers, \
+    GOOGLE_USER_CREDENTIALS_FILE, LOCATION_SHEET_NAME, LOCATION_SHEET_NAMES_AREA, REMINDER_CRON, REMINDER_EVEN_WEEKS, REMINDER_ODD_WEEKS
 from config import NOMINATE_GROUP_MEMBER
 from sheets import SheetsInterface
 from telegramapi import TelegramEndpoint
@@ -20,24 +21,45 @@ from telegramapi import TelegramEndpoint
 
 class RepeatingReminder:
 
-    def __init__(self, bot: Bot, chat_id: int, reminder_message: str, start_datetime: datetime, interval_days: int):
+    def __init__(self, bot: Bot, chat_id: int, reminder_message: str, cron_str: str, on_even_weeks: bool, on_odd_weeks: bool):
         self.bot = bot
         self.chat_id = chat_id
         self.message = reminder_message
-        self.start_datetime = start_datetime
-        self.interval_seconds = interval_days * 24 * 60 * 60
+        self.on_even_weeks = on_even_weeks
+        self.on_odd_weeks = on_odd_weeks
         self.scheduler = sched.scheduler()
         self.callback = None
+        self.cron = self._init_cron(cron_str)
+
+    @staticmethod
+    def _init_cron(cron_str: str):
+        if croniter.is_valid(cron_str):
+            return croniter(cron_str, datetime.now())
+        else:
+            logging.error("Reminder cron is not valid. To enable the reminder it must be fixed")
+            return None
+
+    def _schedule_next_execution(self):
+        if self.cron is not None:
+            valid_execution_time = False
+            next_execution_time = None
+
+            while not valid_execution_time:
+                next_execution_time = self.cron.get_next(datetime)
+                week_number = next_execution_time.isocalendar()[1]
+
+                if self.on_even_weeks and (week_number % 2) == 0:
+                    valid_execution_time = True
+                if self.on_odd_weeks and (week_number % 2 != 0):
+                    valid_execution_time = True
+
+            delta = next_execution_time - datetime.now()
+            self.scheduler.enter(delta.total_seconds(), 1, self.reminder)
+            logging.info("Next reminder on %s.", next_execution_time)
+            self.scheduler.run()
 
     def start(self):
-        if self.start_datetime <= datetime.now():
-            logging.error("Reminder start time is in the past. To enable the reminder it must be in the future!")
-            return
-
-        delta = self.start_datetime - datetime.now()
-        self.scheduler.enter(delta.total_seconds(), 1, self.reminder)
-        logging.info("First reminder in %d seconds.", delta.total_seconds())
-        self.scheduler.run()
+        self._schedule_next_execution()
 
     def stop(self):
         for event in self.scheduler.queue:
@@ -50,9 +72,7 @@ class RepeatingReminder:
         if self.callback is not None:
             self.callback()
 
-        self.scheduler.enter(self.interval_seconds, 1, self.reminder)
-        logging.info("Next reminder in %d seconds.", self.interval_seconds)
-        self.scheduler.run()
+        self._schedule_next_execution()
 
 
 class UserNominator:
@@ -169,38 +189,6 @@ class GracefulKiller:
         os.kill(os.getpid(), 9)
 
 
-def debug_input(reminder_func, nomination_func, location_func):
-    debug_options = {
-        1: 'Reminder',
-        2: 'User nomination',
-        3: 'Suggest location'
-    }
-
-    while True:
-        print(f"Debug events:\n{debug_options}")
-        try:
-            debug_event = int(input("Run debug event: "))
-            if debug_event < 1 or debug_event > len(debug_options):
-                assert ValueError
-
-            if debug_event == 1:
-                class AsyncThread(Thread):
-                    def run(self) -> None:
-                        reminder_func()
-
-                AsyncThread().start()
-
-            elif debug_event == 2:
-                if nomination_func is not None:
-                    nomination_func()
-            elif debug_event == 3:
-                if location_func is not None:
-                    location_func()
-
-        except ValueError:
-            print("Error! This is not a valid number. Try again.")
-
-
 def main():
     logging.basicConfig(level=logging.INFO)
     error_handler = logging.root.handlers[0]
@@ -221,8 +209,9 @@ def main():
     reminder = RepeatingReminder(telegram_api.get_bot(),
                                  config.get_config(GROUP_ID),
                                  messages.get_message("reminder_text"),
-                                 config.get_config(REMINDER_DATETIME),
-                                 config.get_config(REMINDER_INTERVAL))
+                                 config.get_config(REMINDER_CRON),
+                                 config.get_config(REMINDER_EVEN_WEEKS),
+                                 config.get_config(REMINDER_ODD_WEEKS))
 
     if config.get_config(NOMINATE_GROUP_MEMBER):
         user_nominator = UserNominator(telegram_api.get_bot(),
@@ -254,19 +243,12 @@ def main():
 
     reminder.callback = on_remind
 
-    class ReminderThread(Thread):
-        def run(self) -> None:
-            reminder.start()
-
-    ReminderThread().start()
-
     def on_exit():
         reminder.stop()
 
     GracefulKiller(on_exit)
 
-    if config.get_config(DEBUG):
-        debug_input(reminder.reminder, user_nominator.nominate_user, location_suggester.suggest_locations)
+    reminder.start()
 
 
 if __name__ == '__main__':

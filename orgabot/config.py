@@ -1,16 +1,17 @@
 import logging
 import os
 import shutil
-from datetime import datetime
 from os import path
 
+from croniter import croniter
 from yaml import SafeLoader, dump, load
 
 DEBUG = 'debug'
 TELEGRAM_API_KEY = 'telegram_api_key'
 GROUP_ID = 'group_id'
-REMINDER_DATETIME = 'reminder_datetime'
-REMINDER_INTERVAL = 'reminder_interval_days'
+REMINDER_CRON = 'reminder_cron'
+REMINDER_EVEN_WEEKS = 'reminder_cron_even_weeks'
+REMINDER_ODD_WEEKS = 'reminder_cron_odd_weeks'
 NOMINATE_GROUP_MEMBER = 'nomnate_group_member'
 GOOGLE_USER_CREDENTIALS_FILE = 'google_user_credentials_file'
 LOCATION_SHEET_NAME = 'location_sheet_name'
@@ -24,8 +25,9 @@ class Config:
         DEBUG: False,
         TELEGRAM_API_KEY: '',
         GROUP_ID: '',
-        REMINDER_DATETIME: datetime.now(),
-        REMINDER_INTERVAL: 14,
+        REMINDER_CRON: '*/1 * * * 1',
+        REMINDER_EVEN_WEEKS: True,
+        REMINDER_ODD_WEEKS: True,
         NOMINATE_GROUP_MEMBER: True,
         GOOGLE_USER_CREDENTIALS_FILE: '',
         LOCATION_SHEET_NAME: '',
@@ -55,6 +57,8 @@ class Config:
     def _verify_config(self):
         if int(self.config_data[GROUP_ID]) >= 0:
             logging.error("The group id is not referencing a group! The bot may not work as intended")
+        if not croniter.is_valid(self.config_data[REMINDER_CRON]):
+            logging.error("The reminder cron is not valid. The bot may not work as intended")
 
     def get_config(self, key: str):
         return self.config_data[key]
