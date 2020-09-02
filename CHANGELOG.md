@@ -1,3 +1,7 @@
+## 1.1.1 - 2020-09-02
+
+* 🔨 Anonymous polls
+
 ## 1.1.0 - 2020-08-08
 
 * ➕ Can access a google sheet and reads suggestions for the next event locations

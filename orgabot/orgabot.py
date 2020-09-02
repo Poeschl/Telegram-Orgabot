@@ -146,7 +146,7 @@ class LocationSuggester:
         keyboard = [[InlineKeyboardButton(self.location_reroll_text, callback_data=self.REROLL_ACTION)]]
         reroll_keyboard = InlineKeyboardMarkup(keyboard)
 
-        self.last_message = self.bot.send_poll(chat_id=self.chat_id, is_anonymous=False, allows_multiple_answers=True,
+        self.last_message = self.bot.send_poll(chat_id=self.chat_id, is_anonymous=True, allows_multiple_answers=True,
                                                question=self.poll_question, options=chosen_locations, reply_markup=reroll_keyboard)
 
     def reroll_location(self, update, context):
