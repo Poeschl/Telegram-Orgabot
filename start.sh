@@ -8,4 +8,4 @@ pip3 install -r requirements.txt
 
 PYTHONPATH="$(printf "%s:" orgabot/)"
 export PYTHONPATH=$PYTHONPATH PYTHONUNBUFFERED=1
-python3 -u orgabot/orgabot.py
+exec python3 -u orgabot/orgabot.py
