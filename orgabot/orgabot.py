@@ -13,7 +13,8 @@ from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, ChatAction
 from telegram.ext import MessageHandler, Filters, CallbackQueryHandler
 
 from config import Config, TELEGRAM_API_KEY, GROUP_ID, Messages, KnownUsers, \
-    GOOGLE_USER_CREDENTIALS_FILE, LOCATION_SHEET_NAME, LOCATION_SHEET_NAMES_AREA, REMINDER_CRON, REMINDER_EVEN_WEEKS, REMINDER_ODD_WEEKS
+    GOOGLE_USER_CREDENTIALS_FILE, LOCATION_SHEET_NAME, LOCATION_SHEET_NAMES_AREA, REMINDER_CRON, REMINDER_EVEN_WEEKS, REMINDER_ODD_WEEKS, \
+    LOCATION_ENABLED
 from config import NOMINATE_GROUP_MEMBER
 from sheets import SheetsInterface
 from telegramapi import TelegramEndpoint
@@ -223,7 +224,7 @@ def main():
         telegram_api.register_command_handler(MessageHandler(Filters.all, user_nominator.spy_on_message))
         telegram_api.register_command_handler(CallbackQueryHandler(user_nominator.reroll_nominee, pattern=user_nominator.REROLL_ACTION))
 
-    if config.get_config(GOOGLE_USER_CREDENTIALS_FILE) is not None:
+    if config.get_config(LOCATION_ENABLED) and config.get_config(GOOGLE_USER_CREDENTIALS_FILE) is not None:
         location_suggester = LocationSuggester(telegram_api.get_bot(),
                                                config.get_config(GROUP_ID),
                                                f"{config.get_config_folder()}/{config.get_config(GOOGLE_USER_CREDENTIALS_FILE)}",

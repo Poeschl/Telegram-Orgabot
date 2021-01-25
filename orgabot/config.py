@@ -13,6 +13,7 @@ REMINDER_CRON = 'reminder_cron'
 REMINDER_EVEN_WEEKS = 'reminder_cron_even_weeks'
 REMINDER_ODD_WEEKS = 'reminder_cron_odd_weeks'
 NOMINATE_GROUP_MEMBER = 'nomnate_group_member'
+LOCATION_ENABLED = 'location_enabled'
 GOOGLE_USER_CREDENTIALS_FILE = 'google_user_credentials_file'
 LOCATION_SHEET_NAME = 'location_sheet_name'
 LOCATION_SHEET_NAMES_AREA = 'location_sheet_names_area'
@@ -29,6 +30,7 @@ class Config:
         REMINDER_EVEN_WEEKS: True,
         REMINDER_ODD_WEEKS: True,
         NOMINATE_GROUP_MEMBER: True,
+        LOCATION_ENABLED: True,
         GOOGLE_USER_CREDENTIALS_FILE: '',
         LOCATION_SHEET_NAME: '',
         LOCATION_SHEET_NAMES_AREA: ''
@@ -51,8 +53,7 @@ class Config:
                 dump(self.config_data, file)
                 file.truncate()
         else:
-            with open(self.config_file, 'w') as file:
-                dump(self.config_data, file)
+            self.save_config()
 
     def _verify_config(self):
         if int(self.config_data[GROUP_ID]) >= 0:
@@ -62,6 +63,13 @@ class Config:
 
     def get_config(self, key: str):
         return self.config_data[key]
+
+    def set_config(self, key: str, value):
+        self.config_data[key] = value
+
+    def save_config(self):
+        with open(self.config_file, 'w') as file:
+            dump(self.config_data, file)
 
     @staticmethod
     def get_config_folder():
