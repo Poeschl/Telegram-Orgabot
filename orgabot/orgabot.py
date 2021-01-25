@@ -128,7 +128,7 @@ class LocationSuggester:
     REROLL_ACTION = 'location_reroll'
 
     def __init__(self, bot: Bot, chat_id: str, google_creds_file: str, sheetname: str, name_area: str, poll_question: str,
-                 location_reroll_text: str, location_reroll_notification: str):
+                 location_reroll_text: str, location_reroll_notification: str, poll_show_text: str):
         self.bot = bot
         self.chat_id = chat_id
         self.google_creds_file = google_creds_file
@@ -137,11 +137,13 @@ class LocationSuggester:
         self.poll_question = poll_question
         self.location_reroll_text = location_reroll_text
         self.location_reroll_notification = location_reroll_notification
+        self.poll_show_text = poll_show_text
         self.last_message = None
 
     def suggest_locations(self):
         logging.info(f"Get locations from '{self.sheetname}' Sheet for location poll")
         chosen_locations = self._get_random_locations()
+        chosen_locations += self.poll_show_text
         logging.info(f"Selected locations: {chosen_locations}")
 
         keyboard = [[InlineKeyboardButton(self.location_reroll_text, callback_data=self.REROLL_ACTION)]]
@@ -232,7 +234,8 @@ def main():
                                                config.get_config(LOCATION_SHEET_NAMES_AREA),
                                                messages.get_message("location_suggestion_question_text"),
                                                messages.get_message("location_reroll_button"),
-                                               messages.get_message("location_reroll_notification"))
+                                               messages.get_message("location_reroll_notification"),
+                                               messages.get_message("location_poll_show_text"))
         telegram_api.register_command_handler(CallbackQueryHandler(location_suggester.reroll_location,
                                                                    pattern=location_suggester.REROLL_ACTION))
 
