@@ -14,10 +14,10 @@ from telegram.ext import MessageHandler, Filters, CallbackQueryHandler
 
 from config import Config, TELEGRAM_API_KEY, GROUP_ID, Messages, KnownUsers, \
     GOOGLE_USER_CREDENTIALS_FILE, LOCATION_SHEET_NAME, LOCATION_SHEET_NAMES_AREA, REMINDER_CRON, REMINDER_EVEN_WEEKS, REMINDER_ODD_WEEKS, \
-    LOCATION_ENABLED
+    LOCATION_ENABLED, ADMIN_IDS
 from config import NOMINATE_GROUP_MEMBER
 from sheets import SheetsInterface
-from telegramapi import TelegramEndpoint
+from telegramapi import TelegramEndpoint, TelegramLoggingHandler
 
 
 class RepeatingReminder:
@@ -203,6 +203,10 @@ def main():
     config = Config()
     messages = Messages()
     telegram_api = TelegramEndpoint(config.get_config(TELEGRAM_API_KEY))
+
+    telegramlogging = TelegramLoggingHandler(config.get_config(ADMIN_IDS), telegram_api.get_bot())
+    telegramlogging.level = logging.WARNING
+    logging.root.addHandler(telegramlogging)
 
     logging.info('Started Orgabot')
     logging.info("Group Id: %s", config.get_config(GROUP_ID))

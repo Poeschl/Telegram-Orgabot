@@ -17,6 +17,7 @@ LOCATION_ENABLED = 'location_enabled'
 GOOGLE_USER_CREDENTIALS_FILE = 'google_user_credentials_file'
 LOCATION_SHEET_NAME = 'location_sheet_name'
 LOCATION_SHEET_NAMES_AREA = 'location_sheet_names_area'
+ADMIN_IDS = 'admin_ids'
 
 DEFAULT_CONFIG_FOLDER = 'config'
 
@@ -33,7 +34,8 @@ class Config:
         LOCATION_ENABLED: True,
         GOOGLE_USER_CREDENTIALS_FILE: '',
         LOCATION_SHEET_NAME: '',
-        LOCATION_SHEET_NAMES_AREA: ''
+        LOCATION_SHEET_NAMES_AREA: '',
+        ADMIN_IDS: []
     }
 
     def __init__(self):

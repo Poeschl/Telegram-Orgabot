@@ -27,6 +27,7 @@ google_user_credentials_file: credentials.json
 location_enabled: True
 location_sheet_name: MySheet
 location_sheet_names_area: B3:B31
+admin_ids: 12345678
 ```
 
 ### Description
@@ -50,18 +51,26 @@ Should the reminder happen on even or/and odd weeks.
 The file name of the `credentials.json` file for your google service account. It needs to be placed in the config folder.
 
 #### `location_enabled`
+
 Enables the location choosing pool.
 
 #### `location_sheet_name`
+
 This is the name of your google table sheet which should be accessed. Your service account needs to be invited there.
 
 #### `location_sheet_names_area`
+
 This defines the area where the location names can be found. Its specified like `B3:B18`. For now only one column is supported.
 
+#### `admin_ids`
+
+This list hold a list of admins which can controll bot features and retrieve error messages.
+
 ### Texts
+
 All texts can be changed via the `message.yaml` file beside the config file.
 
 ## Environment
 
-The path the the config file can be set with the environment variable `CONFIG_FILE`. It defaults to `./config.yaml`.
-If not existing a file will be generated at first start.
+The path the the config file can be set with the environment variable `CONFIG_FILE`. It defaults to `./config.yaml`. If not existing a file
+will be generated at first start.
