@@ -242,7 +242,7 @@ def main():
     def on_remind():
         if config.get_config(NOMINATE_GROUP_MEMBER):
             user_nominator.nominate_user()
-        if config.get_config(GOOGLE_USER_CREDENTIALS_FILE) is not None:
+        if config.get_config(LOCATION_ENABLED) and config.get_config(GOOGLE_USER_CREDENTIALS_FILE) is not None:
             location_suggester.suggest_locations()
 
     reminder.callback = on_remind
