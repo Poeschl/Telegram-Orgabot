@@ -1,12 +1,12 @@
-# Orgabot
+# Rosie - A Telegram meetup organisation bot
 
 This Telegram bot reminds a group at a specific time about a future meeting and its preparations.
-Its configured with a yaml file and maybe in the future over a direct chat.
+It's configured with a yaml file and maybe in the future over a direct chat.
 
 ## Features
 
-* Sends a reminder message on a specified interval to a group
-* Selectes one of the group members to do the planing and reservations.
+* Sends a reminder message on a specified interval to a telegram group
+* Selects one of the group members to do the planing and reservations.
 * Opens a poll with 4 random selected locations from a google sheet.
 
 ## Screenshot
