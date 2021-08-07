@@ -7,12 +7,18 @@ import mu.KotlinLogging
 import services.ConfigService
 import services.EventService
 import services.MessageService
+import java.nio.file.Files
+import java.nio.file.Path
 
 fun main() {
-    BotApplication().run()
+    val configFolder = System.getenv("CONFIG_FOLDER") ?: "."
+    val configPath = Path.of(configFolder)
+    Files.createDirectories(configPath)
+
+    BotApplication(configPath).run()
 }
 
-class BotApplication {
+class BotApplication(configFolder: Path) {
 
     companion object {
         private val LOGGER = KotlinLogging.logger { }
@@ -22,8 +28,8 @@ class BotApplication {
         LOGGER.info { "Starting Orgabot Rosie" }
     }
 
-    private val configService = ConfigService()
-    private val messageService = MessageService()
+    private val configService = ConfigService(configFolder)
+    private val messageService = MessageService(configFolder)
     private val bot = Bot.createPolling(configService.config.telegramBotUsername, configService.config.telegramBotToken)
 
     private val userSpy = GroupUserSpy(bot, configService)

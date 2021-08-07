@@ -5,19 +5,22 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import mu.KotlinLogging
 import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.pathString
 
-class ConfigService {
+class ConfigService(configFolder: Path) {
 
     companion object {
-        private val CONFIG_FILE: File = File("config/config.yaml")
         private val LOGGER = KotlinLogging.logger { }
     }
+
+    private val configFile: File = File("${configFolder.pathString}/config.yaml")
 
     var config: Config = Config("", "", managingGroup = 0)
         private set
 
     init {
-        if (CONFIG_FILE.exists()) {
+        if (configFile.exists()) {
             readConfigfile()
         } else {
             saveConfigFile()
@@ -35,13 +38,13 @@ class ConfigService {
     }
 
     private fun readConfigfile() {
-        val configString = CONFIG_FILE.readText()
+        val configString = configFile.readText()
         config = Yaml.default.decodeFromString(configString)
     }
 
     private fun saveConfigFile() {
         val configString = Yaml.default.encodeToString(Config.serializer(), config)
-        CONFIG_FILE.writeText(configString)
+        configFile.writeText(configString)
         LOGGER.info { "Config saved" }
     }
 }

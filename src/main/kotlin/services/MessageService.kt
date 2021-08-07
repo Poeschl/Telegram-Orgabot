@@ -7,24 +7,26 @@ import kotlinx.serialization.decodeFromString
 import mu.KotlinLogging
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import kotlin.io.path.pathString
 
-class MessageService {
+class MessageService(configFolder: Path) {
     companion object {
-        private val MESSAGE_FILE: File = File("config/messages.yaml")
         private val LOGGER = KotlinLogging.logger { }
     }
 
+    private val messageFile: File = File("${configFolder.pathString}/messages.yaml")
     private lateinit var loadedMessages: MutableMap<String, String>
 
     init {
-        if (MESSAGE_FILE.exists()) {
+        if (messageFile.exists()) {
             readMessageFile()
         } else {
-            val messagesTemplate = MessageService::class.java.getResource("messages.yaml")
+            val messagesTemplate = MessageService::class.java.getResource("/messages.yaml")
             if (messagesTemplate != null) {
                 messagesTemplate.openStream().use {
-                    Files.copy(it, MESSAGE_FILE.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                    Files.copy(it, messageFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
                 }
             } else {
                 LOGGER.error { "Could not find messages.yaml in resources" }
@@ -47,12 +49,12 @@ class MessageService {
     }
 
     private fun readMessageFile() {
-        val configString = MESSAGE_FILE.readText()
+        val configString = messageFile.readText()
         loadedMessages = Yaml.default.decodeFromString(configString)
     }
 
     private fun saveMessageFile() {
         val configString = Yaml.default.encodeToString(MapSerializer(String.serializer(), String.serializer()), loadedMessages)
-        MESSAGE_FILE.writeText(configString)
+        messageFile.writeText(configString)
     }
 }
