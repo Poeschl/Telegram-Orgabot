@@ -5,7 +5,7 @@ import com.elbekD.bot.types.Message
 import mu.KotlinLogging
 import services.ConfigService
 
-class GroupUserSpy(private val configService: ConfigService, bot: Bot) {
+class GroupUserSpy(bot: Bot, private val configService: ConfigService) {
 
     companion object {
         private val LOGGER = KotlinLogging.logger { }
