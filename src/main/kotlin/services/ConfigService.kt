@@ -56,7 +56,7 @@ data class Config(
 )
 
 @Serializable
-data class CronConfig(val cron: String = "0 0 * * *", val onEvenWeeks: Boolean = true, val onOddWeeks: Boolean = true, val enabled: Boolean = false)
+data class CronConfig(val schedule: String = "every hour", val onEvenWeeks: Boolean = true, val onOddWeeks: Boolean = true, val enabled: Boolean = false)
 
 @Serializable
 data class LocationPollConfig(val enabled: Boolean = true, val googleCredentialPath: String = "", val sheetName: String = "", val namesArea: String = "")

@@ -5,6 +5,7 @@ import listener.AdminCommandsListener
 import listener.GroupUserSpy
 import mu.KotlinLogging
 import services.ConfigService
+import services.EventNotificationScheduler
 import services.EventService
 import services.MessageService
 import java.nio.file.Files
@@ -33,6 +34,8 @@ class BotApplication(configFolder: Path) {
     private val bot = Bot.createPolling(configService.config.telegramBotUsername, configService.config.telegramBotToken)
 
     private val userSpy = GroupUserSpy(bot, configService)
+    private val eventNotificationScheduler = EventNotificationScheduler(configService)
+
     private val eventService = EventService()
     private val eventAnnouncer = EventAnnouncer(bot, configService, messageService, eventService)
     private val organizerChooser = OrganizerChooser(bot, configService, messageService, eventService)
@@ -41,6 +44,11 @@ class BotApplication(configFolder: Path) {
 
     fun run() {
         LOGGER.info { "Watching group '${configService.config.managingGroup}' as '${configService.config.telegramBotUsername}'" }
+
+        eventNotificationScheduler.scheduleNextExecution {
+            eventAnnouncer.announceEventPlaning()
+            organizerChooser.announceOrganizer()
+        }
 
         LOGGER.info { "Started components. Waiting for chat messages" }
         bot.start()

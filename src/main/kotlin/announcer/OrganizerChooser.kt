@@ -60,6 +60,8 @@ class OrganizerChooser(private val bot: Bot, private val configService: ConfigSe
             && callbackQuery.from.id == eventContext.organizerId
             && eventContext.organizerRerollLimit > 0
         ) {
+            bot.answerCallbackQuery(callbackQuery.id)
+
             LOGGER.info { "Rerolling organizer '${eventContext.organizerUsername}'" }
             val lastSelectedUserId = eventContext.organizerId
             val lastSelectedUsername = eventContext.organizerUsername
@@ -72,12 +74,14 @@ class OrganizerChooser(private val bot: Bot, private val configService: ConfigSe
             eventService.setContext(eventContext)
 
             // Remove the reroll button from the original message
-            bot.editMessageReplyMarkup(callbackQuery.message!!.message_id, markup = null)
+            bot.editMessageReplyMarkup(callbackQuery.message!!.chat.id, messageId = callbackQuery.message!!.message_id, markup = null)
 
             sendRerollMessage(eventContext, lastSelectedUsername, newOrganizer.second)
 
         } else {
-            LOGGER.debug { "'${callbackQuery.from.username}' was not allowed to re-roll." }
+            val text = messageService.getMessageFor("nomination_reroll_not_successful")
+            bot.answerCallbackQuery(callbackQuery.id, text, alert = true)
+            LOGGER.info { "'${callbackQuery.from.username}' was not allowed to re-roll." }
         }
     }
 
