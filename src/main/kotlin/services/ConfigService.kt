@@ -51,7 +51,7 @@ class ConfigService(configFolder: Path) {
 
 @Serializable
 data class Config(
-    val telegramBotToken: String, val telegramBotUsername: String, val debug: Boolean = false, val managingGroup: Long, val adminIds: List<Int> = emptyList(),
+    val telegramBotToken: String, val telegramBotUsername: String, val managingGroup: Long, val adminIds: List<Int> = emptyList(),
     val cron: CronConfig = CronConfig(), val locationPoll: LocationPollConfig = LocationPollConfig(), val knownUsers: MutableMap<Int, String> = mutableMapOf()
 )
 
