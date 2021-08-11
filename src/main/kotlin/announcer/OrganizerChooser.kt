@@ -51,7 +51,6 @@ class OrganizerChooser(private val bot: Bot, private val configService: ConfigSe
 
             sendRerollMessage(eventContext, executingUser.username!!, newOrganizer.second)
         }
-
     }
 
     private fun rerollOrganizer(callbackQuery: CallbackQuery) {
@@ -94,6 +93,7 @@ class OrganizerChooser(private val bot: Bot, private val configService: ConfigSe
         val rerollText = messageService.getMessageFor("nomination_reroll_text")
             .replace("\$user", "@${lastOrganizer}")
             .replace("\$newUser", "@${newOrganizer}")
+            .replace("\$count", "${eventContext.organizerRerollLimit}")
         bot.sendMessage(configService.config.managingGroup, text = rerollText, markup = keyboard)
     }
 

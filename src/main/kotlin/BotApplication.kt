@@ -1,13 +1,11 @@
 import announcer.EventAnnouncer
+import announcer.LocationPollCreator
 import announcer.OrganizerChooser
 import com.elbekD.bot.Bot
 import listener.AdminCommandsListener
 import listener.GroupUserSpy
 import mu.KotlinLogging
-import services.ConfigService
-import services.EventNotificationScheduler
-import services.EventService
-import services.MessageService
+import services.*
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -35,19 +33,21 @@ class BotApplication(configFolder: Path) {
 
     private val userSpy = GroupUserSpy(bot, configService)
     private val eventNotificationScheduler = EventNotificationScheduler(configService)
+    private val sheetService = GoogleSheetService(configFolder, configService)
 
     private val eventService = EventService()
     private val eventAnnouncer = EventAnnouncer(bot, configService, messageService, eventService)
     private val organizerChooser = OrganizerChooser(bot, configService, messageService, eventService)
+    private val locationPoller = LocationPollCreator(bot, configService, messageService, eventService, sheetService)
 
-    private val adminCommandsListener = AdminCommandsListener(bot, configService, eventAnnouncer, organizerChooser)
+    private val adminCommandsListener = AdminCommandsListener(bot, configService, eventAnnouncer, organizerChooser, locationPoller)
 
     fun run() {
         LOGGER.info { "Watching group '${configService.config.managingGroup}' as '${configService.config.telegramBotUsername}'" }
-
         eventNotificationScheduler.scheduleNextExecution {
             eventAnnouncer.announceEventPlaning()
             organizerChooser.announceOrganizer()
+            locationPoller.createLocationPoll()
         }
 
         LOGGER.info { "Started components. Waiting for chat messages" }
