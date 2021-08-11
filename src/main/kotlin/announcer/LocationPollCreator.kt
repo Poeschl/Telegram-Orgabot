@@ -7,6 +7,7 @@ import com.elbekD.bot.types.InlineKeyboardMarkup
 import com.elbekD.bot.types.User
 import mu.KotlinLogging
 import services.*
+import kotlin.math.min
 
 class LocationPollCreator(
     private val bot: Bot, private val configService: ConfigService, private val messageService: MessageService, private val eventService: EventService,
@@ -25,11 +26,12 @@ class LocationPollCreator(
     fun createLocationPoll() {
         val eventContext = eventService.eventContext
         if (eventContext != null && configService.config.locationPoll.enabled) {
-            LOGGER.info { "Create location poll for the event." }
+            LOGGER.info { "Create location poll for the event" }
 
             val filterTags = configService.config.locationPoll.filterTags
             val selectedLocations = selectLocations(sheetService.getLocations(), filterTags)
 
+            LOGGER.info { "Send location poll" }
             sendPoll(selectedLocations, eventContext)
         }
     }
@@ -45,6 +47,10 @@ class LocationPollCreator(
             sendRerollMessage(eventContext)
             sendPoll(newLocations, eventContext)
         }
+    }
+
+    fun getAvailableTags(): List<String> {
+        return sheetService.getTags()
     }
 
     private fun rerollLocations(callbackQuery: CallbackQuery) {
@@ -89,6 +95,7 @@ class LocationPollCreator(
         }
 
         val text = messageService.getMessageFor("location_suggestion_question_text")
+            .replace("\$tags", configService.config.locationPoll.filterTags.joinToString(", "))
         val showOnlyText = messageService.getMessageFor("location_poll_show_text")
         val pollOptions = locations.map { it.name }.toMutableList()
         pollOptions.add(showOnlyText)
@@ -102,8 +109,16 @@ class LocationPollCreator(
     }
 
     private fun selectLocations(locations: List<GoogleSheetService.Location>, filterTags: List<String>): List<GoogleSheetService.Location> {
-        val filteredLocations = locations.filter { locationTag -> locationTag.tags.map { it.lowercase() }.containsAll(filterTags.map { it.lowercase() }) }
-        val randomIndexes = IntRange(0, filteredLocations.size).shuffled().slice(1..configService.config.locationPoll.locationsAmount)
-        return filteredLocations.slice(randomIndexes)
+        val filteredLocations = locations
+            .filter { location ->
+                location.tags.containsAll(filterTags.map { it.lowercase() })
+            }
+        return if (filteredLocations.isNotEmpty()) {
+            val locationMaxIndex = min(configService.config.locationPoll.locationsAmount, filteredLocations.size) - 1
+            val randomIndexes = IntRange(0, locationMaxIndex).shuffled().slice(0..locationMaxIndex)
+            filteredLocations.slice(randomIndexes)
+        } else {
+            emptyList()
+        }
     }
 }

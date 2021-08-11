@@ -26,7 +26,7 @@ class GoogleSheetService(private val configFolder: Path, private val configServi
 
     fun getLocations(): List<Location> {
         val httpTransport = GoogleNetHttpTransport.newTrustedTransport()
-        val sheetData = getSheetValues(
+        val sheetData = getLocationValues(
             httpTransport, configService.config.locationPoll.sheetId,
             configService.config.locationPoll.namesArea, configService.config.locationPoll.tagsArea
         )
@@ -39,12 +39,12 @@ class GoogleSheetService(private val configFolder: Path, private val configServi
                 val locationName = name as String
                 val locationTagString = tags.getOrNull(index)
                 val locationTags = if (locationTagString != null) {
-                    (locationTagString as String).split(",")
+                    (locationTagString as String).split(",").map { it.lowercase().trim() }
                 } else {
                     emptyList()
                 }
 
-                LOGGER.debug { "Got $name (${locationTags.joinToString(",")})" }
+                LOGGER.debug { "Got $name (${locationTags.joinToString(", ")})" }
 
                 locations.add(Location(locationName, locationTags))
             }
@@ -52,10 +52,27 @@ class GoogleSheetService(private val configFolder: Path, private val configServi
         return locations
     }
 
-    private fun getSheetValues(httpTransport: NetHttpTransport, sheetId: String, nameRange: String, tagRange: String): MutableList<ValueRange>? {
+    fun getTags(): List<String> {
+        val httpTransport = GoogleNetHttpTransport.newTrustedTransport()
+        val sheetData = getTags(httpTransport, configService.config.locationPoll.sheetId, configService.config.locationPoll.tagsArea)
+        val tags = sheetData?.mapNotNull { if (it.isEmpty()) null else it[0] }
+            ?.flatMap { it.toString().split(",").map { tag -> tag.trim().lowercase() } }
+            ?.distinct()
+            .orEmpty()
+        LOGGER.debug { "Got tags ${tags.joinToString(", ")}" }
+        return tags
+    }
+
+    private fun getLocationValues(httpTransport: NetHttpTransport, sheetId: String, nameRange: String, tagRange: String): MutableList<ValueRange>? {
         val sheetsService = Sheets.Builder(httpTransport, jsonFactory, getCredentials(httpTransport)).setApplicationName("Orgabot").build()
         val response = sheetsService.spreadsheets().values().batchGet(sheetId).setRanges(listOf(nameRange, tagRange)).execute()
         return response.valueRanges
+    }
+
+    private fun getTags(httpTransport: NetHttpTransport, sheetId: String, tagRange: String): MutableList<MutableList<Any>>? {
+        val sheetsService = Sheets.Builder(httpTransport, jsonFactory, getCredentials(httpTransport)).setApplicationName("Orgabot").build()
+        val response = sheetsService.spreadsheets().values().get(sheetId, tagRange).execute()
+        return response.getValues()
     }
 
     private fun getCredentials(httpTransport: NetHttpTransport): Credential? {
