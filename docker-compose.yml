@@ -1,4 +1,4 @@
-version: '3.6'
+version: '3'
 
 services:
 
@@ -6,7 +6,6 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    container_name: orgabot
-    image: orgabot
+    image: orgabot-rosie
     volumes:
-    - ./config:/home/bot/config:rw
+      - ./config:/app/config:rw

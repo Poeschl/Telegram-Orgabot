@@ -1,0 +1,12 @@
+reminder_text: "Ich bin ein Reminder für das nächste Treffen. Tut was nötig ist."
+nomination_text: "Dieses Mal ist $user mit dem organisieren dran."
+nomination_reroll_button: "🔄 Reroll"
+nomination_reroll_text: "$user hat erneut gewürfelt. Der neue Organisator ist: $newUser. ($count Wiederholungen über)"
+nomination_reroll_not_successful: "Du kannst die Auswahl nicht wiederholen. Nur der Ausgewählte kann erneut würfeln."
+location_suggestion_question_text: |-
+  Ich hab hier ein paar Restaurants rausgesucht, welches spricht euch an? (Mehrauswahl möglich).
+  Aktive Tags: $tags
+location_reroll_button: "🔄 Reroll"
+location_reroll_notification: "$user hat erneut gewürfelt. ($count Wiederholungen über)"
+location_poll_show_text: "Ich will nur das Ergebnis sehen"
+location_reroll_not_successful: "Du kannst die Auswahl nicht wiederholen. Nur der Ausgewählte kann erneut würfeln."
