@@ -56,10 +56,10 @@ data class Config(
 )
 
 @Serializable
-data class CronConfig(val schedule: String = "every hour", val onEvenWeeks: Boolean = true, val onOddWeeks: Boolean = true, val enabled: Boolean = false)
+data class CronConfig(var schedule: String = "every hour", var onEvenWeeks: Boolean = true, var onOddWeeks: Boolean = true, var enabled: Boolean = false)
 
 @Serializable
 data class LocationPollConfig(
-    val enabled: Boolean = true, val googleCredentialPath: String = "", val sheetId: String = "", val namesArea: String = "", val tagsArea: String = "",
+    var enabled: Boolean = true, val googleCredentialPath: String = "", val sheetId: String = "", val namesArea: String = "", val tagsArea: String = "",
     val locationsAmount: Int = 4, var filterTags: List<String> = listOf()
 )
