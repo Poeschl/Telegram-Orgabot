@@ -58,7 +58,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: ./Dockerfile
+          file: ./docker/Dockerfile
           push: true
           tags: ghcr.io/poeschl/telegram-orga-bot-rosie:latest
           labels: ${{ steps.docker_meta.outputs.labels }}
