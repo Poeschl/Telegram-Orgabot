@@ -1,4 +1,4 @@
-package services
+package xyz.poeschl.bot.rosie.services
 
 import com.google.api.client.auth.oauth2.Credential
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential

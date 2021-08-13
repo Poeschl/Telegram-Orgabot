@@ -1,4 +1,4 @@
-package services
+package xyz.poeschl.bot.rosie.services
 
 class EventService {
 

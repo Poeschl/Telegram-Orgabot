@@ -1,4 +1,4 @@
-package services
+package xyz.poeschl.bot.rosie.services
 
 import com.charleskorn.kaml.Yaml
 import kotlinx.serialization.Serializable

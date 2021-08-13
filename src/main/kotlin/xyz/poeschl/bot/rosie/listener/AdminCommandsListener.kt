@@ -1,8 +1,5 @@
-package listener
+package xyz.poeschl.bot.rosie.listener
 
-import announcer.EventAnnouncer
-import announcer.LocationPollCreator
-import announcer.OrganizerChooser
 import com.elbekD.bot.Bot
 import com.elbekD.bot.feature.chain.chain
 import com.elbekD.bot.feature.chain.jumpToAndFire
@@ -11,7 +8,10 @@ import com.elbekD.bot.types.Message
 import com.github.shyiko.skedule.InvalidScheduleException
 import com.github.shyiko.skedule.Schedule
 import mu.KotlinLogging
-import services.ConfigService
+import xyz.poeschl.bot.rosie.announcer.EventAnnouncer
+import xyz.poeschl.bot.rosie.announcer.LocationPollCreator
+import xyz.poeschl.bot.rosie.announcer.OrganizerChooser
+import xyz.poeschl.bot.rosie.services.ConfigService
 
 class AdminCommandsListener(
     private val bot: Bot, private val configService: ConfigService,

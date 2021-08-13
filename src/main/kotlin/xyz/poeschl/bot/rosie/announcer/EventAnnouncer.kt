@@ -1,11 +1,11 @@
-package announcer
+package xyz.poeschl.bot.rosie.announcer
 
 import com.elbekD.bot.Bot
 import mu.KotlinLogging
-import services.ConfigService
-import services.EventContext
-import services.EventService
-import services.MessageService
+import xyz.poeschl.bot.rosie.services.ConfigService
+import xyz.poeschl.bot.rosie.services.EventContext
+import xyz.poeschl.bot.rosie.services.EventService
+import xyz.poeschl.bot.rosie.services.MessageService
 
 class EventAnnouncer(private val bot: Bot, private val configService: ConfigService, private val messageService: MessageService, private val eventService: EventService) {
 

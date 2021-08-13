@@ -1,11 +1,13 @@
-import announcer.EventAnnouncer
-import announcer.LocationPollCreator
-import announcer.OrganizerChooser
+package xyz.poeschl.bot.rosie
+
 import com.elbekD.bot.Bot
-import listener.AdminCommandsListener
-import listener.GroupUserSpy
 import mu.KotlinLogging
-import services.*
+import xyz.poeschl.bot.rosie.announcer.EventAnnouncer
+import xyz.poeschl.bot.rosie.announcer.LocationPollCreator
+import xyz.poeschl.bot.rosie.announcer.OrganizerChooser
+import xyz.poeschl.bot.rosie.listener.AdminCommandsListener
+import xyz.poeschl.bot.rosie.listener.GroupUserSpy
+import xyz.poeschl.bot.rosie.services.*
 import java.nio.file.Files
 import java.nio.file.Path
 

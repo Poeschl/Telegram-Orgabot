@@ -1,4 +1,4 @@
-package announcer
+package xyz.poeschl.bot.rosie.announcer
 
 import com.elbekD.bot.Bot
 import com.elbekD.bot.types.CallbackQuery
@@ -6,7 +6,7 @@ import com.elbekD.bot.types.InlineKeyboardButton
 import com.elbekD.bot.types.InlineKeyboardMarkup
 import com.elbekD.bot.types.User
 import mu.KotlinLogging
-import services.*
+import xyz.poeschl.bot.rosie.services.*
 import kotlin.math.min
 
 class LocationPollCreator(

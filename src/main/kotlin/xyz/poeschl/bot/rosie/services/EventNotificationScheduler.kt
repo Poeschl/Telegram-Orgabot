@@ -1,4 +1,4 @@
-package services
+package xyz.poeschl.bot.rosie.services
 
 import com.github.shyiko.skedule.InvalidScheduleException
 import com.github.shyiko.skedule.Schedule

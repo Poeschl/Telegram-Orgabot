@@ -1,9 +1,9 @@
-package listener
+package xyz.poeschl.bot.rosie.listener
 
 import com.elbekD.bot.Bot
 import com.elbekD.bot.types.Message
 import mu.KotlinLogging
-import services.ConfigService
+import xyz.poeschl.bot.rosie.services.ConfigService
 
 class GroupUserSpy(bot: Bot, private val configService: ConfigService) {
 
