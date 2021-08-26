@@ -37,6 +37,7 @@ locationPoll:
   tagsArea: "B1:B100"
   locationsAmount: 4
   filterTags: [ ]
+  reminderVoterPercentage: 0.6
 knownUsers: { }
 ```
 
@@ -101,6 +102,10 @@ This set the amount of location options for the location poll.
 ### `locationPoll` > `filterTags`
 
 The tags the poll generator should filter for. It can be also set via the bot.
+
+### `locationPoll` > `reminderVoterPercentage`
+
+A value between 0.0 - 1.0 which marks the threshold for a reminder when x percent of the people in the organisation group voted on the location. Set 0 to disable.
 
 ### `knownUsers`
 

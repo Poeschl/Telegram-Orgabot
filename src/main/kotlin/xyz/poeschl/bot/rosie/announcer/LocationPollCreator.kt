@@ -99,7 +99,8 @@ class LocationPollCreator(
         val showOnlyText = messageService.getMessageFor("location_poll_show_text")
         val pollOptions = locations.map { it.name }.toMutableList()
         pollOptions.add(showOnlyText)
-        bot.sendPoll(configService.config.managingGroup, text, pollOptions, anonymous = true, allowsMultipleAnswers = true, markup = keyboard)
+        val createdPoll = bot.sendPoll(configService.config.managingGroup, text, pollOptions, anonymous = true, allowsMultipleAnswers = true, markup = keyboard)
+        eventContext.locationPollId = createdPoll.get().poll?.id!!
     }
 
     private fun createRerollKeyboard(): InlineKeyboardMarkup {

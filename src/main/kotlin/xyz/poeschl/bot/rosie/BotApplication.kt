@@ -7,6 +7,7 @@ import xyz.poeschl.bot.rosie.announcer.LocationPollCreator
 import xyz.poeschl.bot.rosie.announcer.OrganizerChooser
 import xyz.poeschl.bot.rosie.listener.AdminCommandsListener
 import xyz.poeschl.bot.rosie.listener.GroupUserSpy
+import xyz.poeschl.bot.rosie.listener.LocationPollListener
 import xyz.poeschl.bot.rosie.services.*
 import java.nio.file.Files
 import java.nio.file.Path
@@ -41,6 +42,7 @@ class BotApplication(configFolder: Path) {
     private val eventAnnouncer = EventAnnouncer(bot, configService, messageService, eventService)
     private val organizerChooser = OrganizerChooser(bot, configService, messageService, eventService)
     private val locationPoller = LocationPollCreator(bot, configService, messageService, eventService, sheetService)
+    private val locationPollListener = LocationPollListener(bot, configService, messageService, eventService)
 
     private val adminCommandsListener = AdminCommandsListener(bot, configService, eventAnnouncer, organizerChooser, locationPoller)
 

@@ -61,5 +61,5 @@ data class CronConfig(var schedule: String = "every hour", var onEvenWeeks: Bool
 @Serializable
 data class LocationPollConfig(
     var enabled: Boolean = true, val googleCredentialPath: String = "", val sheetId: String = "", val namesArea: String = "", val tagsArea: String = "",
-    val locationsAmount: Int = 4, var filterTags: List<String> = listOf()
+    val locationsAmount: Int = 4, var filterTags: List<String> = listOf(), val reminderVoterPercentage: Double = 0.6
 )
