@@ -116,7 +116,7 @@ class LocationPollCreator(
             }
         return if (filteredLocations.isNotEmpty()) {
             val locationMaxIndex = min(configService.config.locationPoll.locationsAmount, filteredLocations.size) - 1
-            val randomIndexes = IntRange(0, locationMaxIndex).shuffled().slice(0..locationMaxIndex)
+            val randomIndexes = IntRange(0, filteredLocations.size).shuffled().slice(0..locationMaxIndex)
             filteredLocations.slice(randomIndexes)
         } else {
             emptyList()
