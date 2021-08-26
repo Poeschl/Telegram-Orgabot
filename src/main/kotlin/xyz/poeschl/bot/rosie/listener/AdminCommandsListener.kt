@@ -5,6 +5,7 @@ import com.elbekD.bot.feature.chain.chain
 import com.elbekD.bot.feature.chain.jumpToAndFire
 import com.elbekD.bot.types.BotCommand
 import com.elbekD.bot.types.Message
+import com.elbekD.bot.util.Action
 import com.github.shyiko.skedule.InvalidScheduleException
 import com.github.shyiko.skedule.Schedule
 import mu.KotlinLogging
@@ -150,6 +151,7 @@ class AdminCommandsListener(
 
         }.then(label = "TAG_START") { msg ->
             logAdminCmd(msg)
+            bot.sendChatAction(msg.chat.id, Action.Typing)
             val knownTags = locationPoller.getAvailableTags()
             bot.sendMessage(
                 msg.chat.id,
