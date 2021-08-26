@@ -1,9 +1,12 @@
+import java.util.regex.Matcher
+
 plugins {
   id 'java'
   id 'idea'
   id 'org.jetbrains.kotlin.jvm' version '1.5.21'
   id 'org.jetbrains.kotlin.plugin.serialization' version '1.5.21'
   id 'com.github.johnrengelman.shadow' version '7.0.0'
+  id 'net.researchgate.release' version '2.8.1'
 }
 
 group 'xyz.poeschl.bot.rosie'
@@ -50,4 +53,17 @@ jar {
 
 shadowJar {
   archiveClassifier.set('')
+}
+
+release {
+  buildTasks = []
+  preTagCommitMessage = ':bookmark: pre tag commit: '
+  tagCommitMessage = ':bookmark: creating tag: '
+  newVersionCommitMessage = ':bookmark: new version commit: '
+  git {
+    requireBranch = 'master'
+  }
+  versionPatterns = [
+      /(\d+)\.(\d+)\.(\d+)([^\d]*$)/: { Matcher m, Project p -> m.replaceAll("${m[0][1]}.${(m[0][2] as int) + 1}.${m[0][3]}${m[0][4]}") }
+  ]
 }
