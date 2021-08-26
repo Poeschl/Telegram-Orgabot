@@ -25,7 +25,7 @@ managingGroup: 12345678
 adminIds:
   - 12345678
 cron:
-  cron: "*/1 * * * *"
+  schedule: "every minute"
   onEvenWeeks: true
   onOddWeeks: true
   enabled: true
@@ -56,9 +56,9 @@ The group_id the bot should post its messages. Remember to add the bot there as 
 
 This list hold a list of admins which can control bot features and retrieve error messages.
 
-### `cron` > `cron`
+### `cron` > `schedule`
 
-The cron expression for the reminder post.
+The expression for the schedule. For more about the format look [here](https://github.com/shyiko/skedule).
 
 ### `cron` > `onEvenWeeks`
 
