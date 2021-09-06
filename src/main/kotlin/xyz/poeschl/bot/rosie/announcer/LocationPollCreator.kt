@@ -90,7 +90,7 @@ class LocationPollCreator(
 
     private fun sendPoll(locations: List<GoogleSheetService.Location>, eventContext: EventContext) {
         val keyboard = when {
-            eventContext.locationRerollLimit > 1 -> createRerollKeyboard()
+            eventContext.locationRerollLimit > 0 -> createRerollKeyboard()
             else -> null
         }
 
