@@ -11,7 +11,7 @@ plugins {
 
 group 'xyz.poeschl.bot.rosie'
 
-sourceCompatibility = JavaVersion.VERSION_16
+sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
   mavenCentral()
@@ -34,10 +34,10 @@ dependencies {
 }
 
 compileKotlin {
-  kotlinOptions.jvmTarget = JavaVersion.VERSION_16
+  kotlinOptions.jvmTarget = JavaVersion.VERSION_17
 }
 compileTestKotlin {
-  kotlinOptions.jvmTarget = JavaVersion.VERSION_16
+  kotlinOptions.jvmTarget = JavaVersion.VERSION_17
 }
 
 test {
