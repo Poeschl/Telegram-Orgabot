@@ -4,7 +4,6 @@ import com.elbekD.bot.Bot
 import com.elbekD.bot.types.CallbackQuery
 import com.elbekD.bot.types.InlineKeyboardButton
 import com.elbekD.bot.types.InlineKeyboardMarkup
-import com.elbekD.bot.types.User
 import mu.KotlinLogging
 import xyz.poeschl.bot.rosie.services.*
 import kotlin.math.min
@@ -36,7 +35,7 @@ class LocationPollCreator(
         }
     }
 
-    fun forceReroll(executingUser: User) {
+    fun forceReroll() {
         val eventContext = eventService.eventContext
         if (eventContext != null) {
             LOGGER.info { "Force rerolling locations" }

@@ -97,7 +97,7 @@ class OrganizerChooser(private val bot: Bot, private val configService: ConfigSe
         bot.sendMessage(configService.config.managingGroup, text = rerollText, markup = keyboard)
     }
 
-    private fun selectOrganizer(userMap: Map<Int, String>): Pair<Int, String> {
+    private fun selectOrganizer(userMap: Map<Long, String>): Pair<Long, String> {
         val organizerId = userMap.keys.random()
         val organizerName = userMap[organizerId]!!
 

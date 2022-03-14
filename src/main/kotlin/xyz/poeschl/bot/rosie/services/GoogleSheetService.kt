@@ -64,18 +64,18 @@ class GoogleSheetService(private val configFolder: Path, private val configServi
     }
 
     private fun getLocationValues(httpTransport: NetHttpTransport, sheetId: String, nameRange: String, tagRange: String): MutableList<ValueRange>? {
-        val sheetsService = Sheets.Builder(httpTransport, jsonFactory, getCredentials(httpTransport)).setApplicationName("Orgabot").build()
+        val sheetsService = Sheets.Builder(httpTransport, jsonFactory, getCredentials()).setApplicationName("Orgabot").build()
         val response = sheetsService.spreadsheets().values().batchGet(sheetId).setRanges(listOf(nameRange, tagRange)).execute()
         return response.valueRanges
     }
 
     private fun getTags(httpTransport: NetHttpTransport, sheetId: String, tagRange: String): MutableList<MutableList<Any>>? {
-        val sheetsService = Sheets.Builder(httpTransport, jsonFactory, getCredentials(httpTransport)).setApplicationName("Orgabot").build()
+        val sheetsService = Sheets.Builder(httpTransport, jsonFactory, getCredentials()).setApplicationName("Orgabot").build()
         val response = sheetsService.spreadsheets().values().get(sheetId, tagRange).execute()
         return response.getValues()
     }
 
-    private fun getCredentials(httpTransport: NetHttpTransport): Credential? {
+    private fun getCredentials(): Credential? {
         val credentialFile = File("${configFolder.pathString}/${configService.config.locationPoll.googleCredentialPath}")
         if (!credentialFile.exists()) {
             LOGGER.error { "Could not find the credentials file at '${credentialFile.path}'" }

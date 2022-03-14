@@ -15,6 +15,6 @@ class EventService {
 }
 
 data class EventContext(
-    var organizerId: Int, var organizerUsername: String, var organizerRerollLimit: Int = 1, var locationRerollLimit: Int = 3,
+    var organizerId: Long, var organizerUsername: String, var organizerRerollLimit: Int = 1, var locationRerollLimit: Int = 3,
     var locationPollId: String? = null
 )

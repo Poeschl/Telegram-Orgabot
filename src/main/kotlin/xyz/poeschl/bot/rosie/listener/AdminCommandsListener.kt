@@ -102,7 +102,7 @@ class AdminCommandsListener(
         bot.onCommand(COMMAND_LOCATION_REROLL) { msg, _ ->
             if (validAdminCommand(msg)) {
                 logAdminCmd(msg)
-                locationPoller.forceReroll(msg.from!!)
+                locationPoller.forceReroll()
             }
         }
     }
